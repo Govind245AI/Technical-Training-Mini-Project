@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced BFS & DFS Visualizer</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI';
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .container {
+      background: white;
+      color: black;
+      width: 450px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    input, textarea {
+      width: 90%;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 6px;
+      border: 1px solid gray;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #2a5298;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #1e3c72;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .cell {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+
+    .wall {
+      background: black;
+    }
+
+    .visited {
+      background: orange;
+    }
+
+    .path {
+      background: limegreen;
+    }
+
+    #output {
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1> BFS & DFS Visualizer</h1>
+
+<div class="container">
+
+  <button onclick="resetGrid()">Reset Grid</button>
+  <button onclick="runBFS()">Run BFS</button>
+  <button onclick="runDFS()">Run DFS</button>
+
+  <div class="grid" id="grid"></div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+const ROWS = 10;
+const COLS = 10;
+let grid = [];
+let cells = [];
+
+function createGrid() {
+  const gridDiv = document.getElementById("grid");
+  gridDiv.innerHTML = "";
+  grid = [];
+  cells = [];
+
+  for(let i=0;i<ROWS;i++) {
+    let row = [];
+    let cellRow = [];
+
+    for(let j=0;j<COLS;j++) {
+      let div = document.createElement("div");
+      div.classList.add("cell");
+
+      div.onclick = () => {
+        div.classList.toggle("wall");
+        grid[i][j] = grid[i][j] ? 0 : 1;
+      };
+
+      gridDiv.appendChild(div);
+      row.push(0);
+      cellRow.push(div);
+    }
+
+    grid.push(row);
+    cells.push(cellRow);
+  }
+}
+
+function resetGrid() {
+  createGrid();
+  document.getElementById("output").innerText = "";
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function runBFS() {
+  let queue = [[[0,0]]];
+  let visited = new Set();
+
+  while(queue.length > 0) {
+    let path = queue.shift();
+    let [x,y] = path[path.length-1];
+
+    if(visited.has(x+","+y)) continue;
+    visited.add(x+","+y);
+
+    cells[x][y].classList.add("visited");
+    await sleep(50);
+
+    if(x===ROWS-1 && y===COLS-1) {
+      showPath(path);
+      return;
+    }
+
+    let dirs = [[0,1],[1,0],[0,-1],[-1,0]];
+    for(let [dx,dy] of dirs) {
+      let nx=x+dx, ny=y+dy;
+      if(nx>=0 && ny>=0 && nx<ROWS && ny<COLS && grid[nx][ny]===0) {
+        queue.push([...path,[nx,ny]]);
+      }
+    }
+  }
+}
+
+async function runDFS() {
+  let stack = [[[0,0]]];
+  let visited = new Set();
+
+  while(stack.length > 0) {
+    let path = stack.pop();
+    let [x,y] = path[path.length-1];
+
+    if(visited.has(x+","+y)) continue;
+    visited.add(x+","+y);
+
+    cells[x][y].classList.add("visited");
+    await sleep(50);
+
+    if(x===ROWS-1 && y===COLS-1) {
+      showPath(path);
+      return;
+    }
+
+    let dirs = [[0,1],[1,0],[0,-1],[-1,0]];
+    for(let [dx,dy] of dirs) {
+      let nx=x+dx, ny=y+dy;
+      if(nx>=0 && ny>=0 && nx<ROWS && ny<COLS && grid[nx][ny]===0) {
+        stack.push([...path,[nx,ny]]);
+      }
+    }
+  }
+}
+
+function showPath(path) {
+  path.forEach(([x,y]) => {
+    cells[x][y].classList.add("path");
+  });
+  document.getElementById("output").innerText = "Path Found!";
+}
+
+createGrid();
+</script>
+
+</body>
+</html>
